@@ -40,7 +40,6 @@ class Year():
         next_first_weekday = 0 # First weekday of the next month we will instantiate
         for month_info in month_infos:
             month = Month(month_info.name, month_info.n_days, next_first_weekday)
-            print month.name, month.n_days, month.first_weekday, month.next_first_weekday
             next_first_weekday = month.next_first_weekday
             self.months.append(month)
         self.months = tuple(self.months)
@@ -49,19 +48,51 @@ def main():
     normal_year = Year()
     leap_year = Year(leap=True)
 
+    # By default, the first day of the year is assumed to be Sunday
     weekday_names = deque(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])
-    first_weekday_of_year = None
     if (len(sys.argv) > 1):
         first_weekday_of_year = sys.argv[1]
-        weekday_name2indx ={}
-        for indx, name in enumerate(weekday_names):
-            weekday_name2indx[name] = indx
-        first_weekday_indx = weekday_name2indx[first_weekday_of_year]
-        weekday_names.rotate(-first_weekday_indx) 
+    else:
+        first_weekday_of_year = 'Sun'
 
-    print
-    for month in normal_year.months:
-        print month.name, [weekday_names[indx] for indx in month.fifth_weekdays]
+    
+    weekday_name2indx ={}
+    for indx, name in enumerate(weekday_names):
+        weekday_name2indx[name] = indx
+    first_weekday_indx = weekday_name2indx[first_weekday_of_year]
+    weekday_names.rotate(-first_weekday_indx) # 
+
+    print 'For years beginning with', first_weekday_of_year, ':'
+    for year in (normal_year, leap_year):
+
+        fifth_weekday_name2months = {}
+        for weekday_name in weekday_names:
+            fifth_weekday_name2months[weekday_name] = []
+
+        month2fifth_weekday_names = {}
+
+        print
+        if year == leap_year:
+            print "RESULTS FOR A LEAP YEAR"
+        else:
+            print "RESULTS FOR A NON-LEAP YEAR"
+        print
+
+        for month in year.months:
+            fifth_weekday_names = [weekday_names[indx] for indx in month.fifth_weekdays]
+            month2fifth_weekday_names[month.name] = fifth_weekday_names
+            for fifth_weekday_name in fifth_weekday_names:
+                fifth_weekday_name2months[fifth_weekday_name].append(month.name)
+        
+        print 'For each month, these weekdays occur five times:'
+        for month in year.months:
+            print month.name, ':', month2fifth_weekday_names[month.name]
+
+        print
+        print 'For each weekday, these months have five instances:'
+        for weekday_name in weekday_names:
+            print weekday_name, ':', fifth_weekday_name2months[weekday_name]
+        print
 
 if __name__ == '__main__':
     main() 
